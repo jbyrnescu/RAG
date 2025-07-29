@@ -1,14 +1,30 @@
 The quick notes:
 
-PRE-work:
-Run CreateVirtualEnv.sh
+All this should be done under the RAG directory:
 
+PRE-work:
+Install python3 - brew install python3
+install ollama - brew install ollama
+create your work directory - mkdir RAG
+
+Run CreateVirtualEnv.sh
+start ollama with  - startOllama.sh
+load and run the mistarl 7B LLM
+install the SentenceTransformer in your virtual env
+    - run installSentenceTransformer.sh
+
+
+Create the file your going to create embeddings with and 
 1. Take out all tabs from you document text.  Name it RAGFile.txt
     a. a command like cat <yourDocument> | tr -d '\t' > RAGFileWOTabs.txt
 2. Run createChunks.sh
 3. Run createEmbeddings.sh
-4. Run query.sh with your prompt as a quoted argument.
+
+Then run your query
+Run query.sh with your prompt as a quoted argument.
    (This script contains the last 2 steps.) findChunks.sh and analyze.sh
+
+
 
 
 The long notes:
