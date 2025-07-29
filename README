@@ -5,6 +5,7 @@ All this should be done under the RAG directory:
 PRE-work:
 Install python3 - brew install python3
 install ollama - brew install ollama
+install numpy - brew install numpy
 create your work directory - mkdir RAG
 
 Run CreateVirtualEnv.sh
