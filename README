@@ -1,0 +1,125 @@
+The quick notes:
+
+PRE-work
+Run CreateVirtualEnv.sh
+
+1. Take out all tabs from you document text.  Name it combinedJournalWOTabs.txt
+2. Run createChunks.sh
+3. Run createEmbeddings.sh
+4. Run query.sh with your prompt as a quoted argument.
+   (This script contains the last 2 steps.) findChunks.sh and analyze.sh
+
+
+The long notes:
+
+1. Journal Chunking (Bash)
+Input:
+
+journal.txt — your full journal (plain text, 200+ pages)
+Output:
+
+chunks.txt — each ~500-character chunk on a separate line
+Command:
+
+fold -w 500 journal.txt > chunks.txt
+You can also use awk to ensure chunk boundaries are cleaner if needed.
+
+🔹 2. Embedding Chunks (Python)
+Input:
+
+chunks.txt (each line = 1 chunk)
+Output:
+
+embeddings.tsv — tab-separated file with:
+chunk_id<TAB>chunk_text<TAB>[embedding_vector]
+Script: embed.py
+
+# embed.py
+import sys
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+
+with open(sys.argv[1], "r") as f:
+    for i, line in enumerate(f):
+        chunk = line.strip()
+        emb = model.encode(chunk).tolist()
+        print(f"{i}\t{chunk}\t{emb}")
+Run with:
+
+python3 embed.py chunks.txt > embeddings.tsv
+🔹 3. Find Relevant Chunks for a Query
+Input:
+
+embeddings.tsv
+query.txt — your question, e.g.:
+What are the most common themes I reflect on?
+Output:
+
+relevant_chunks.txt — top 3–5 matching journal chunks
+Script: find_chunks.py
+
+# find_chunks.py
+import sys
+import ast
+import numpy as np
+from sentence_transformers import SentenceTransformer
+
+model = SentenceTransformer("all-MiniLM-L6-v2")
+query = open(sys.argv[1], "r").read().strip()
+query_emb = model.encode(query)
+
+def cosine(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+chunks = []
+with open(sys.argv[2], "r") as f:
+    for line in f:
+        chunk_id, text, emb_str = line.strip().split('\t')
+        emb = np.array(ast.literal_eval(emb_str))
+        score = cosine(query_emb, emb)
+        chunks.append((score, text))
+
+top_chunks = sorted(chunks, reverse=True)[:5]
+for score, text in top_chunks:
+    print(text)
+Run with:
+
+python3 find_chunks.py query.txt embeddings.tsv > relevant_chunks.txt
+🔹 4. Feed into Mistral via Ollama (Bash)
+Input:
+
+query.txt
+relevant_chunks.txt
+Output:
+
+Mistral's response printed in terminal
+Script: analyze.sh
+
+#!/bin/bash
+
+QUERY=$(cat query.txt)
+CHUNKS=$(cat relevant_chunks.txt)
+
+PROMPT="You are an AI analyzing journal entries. Based on the excerpts below, answer the question.
+
+Journal Excerpts:
+$CHUNKS
+
+Question:
+$QUERY
+"
+
+echo "$PROMPT" | ollama run mistral
+Run with:
+
+bash analyze.sh
+
+
+
+# More caveats from brew install
+
+I guess ollama usually runs in the background.  (Which I don't want.)
+Here's how to run it w/o a background process:
+OLLAMA_FLASH_ATTENTION="1" OLLAMA_KV_CACHE_TYPE="q8_0" /opt/homebrew/opt/ollama/bin/ollama serve
+
