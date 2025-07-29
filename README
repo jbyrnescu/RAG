@@ -1,9 +1,10 @@
 The quick notes:
 
-PRE-work
+PRE-work:
 Run CreateVirtualEnv.sh
 
-1. Take out all tabs from you document text.  Name it combinedJournalWOTabs.txt
+1. Take out all tabs from you document text.  Name it RAGFile.txt
+    a. a command like cat <yourDocument> | tr -d '\t' > RAGFileWOTabs.txt
 2. Run createChunks.sh
 3. Run createEmbeddings.sh
 4. Run query.sh with your prompt as a quoted argument.
@@ -12,16 +13,16 @@ Run CreateVirtualEnv.sh
 
 The long notes:
 
-1. Journal Chunking (Bash)
+1. RAGFileWOTabs Chunking (Bash)
 Input:
 
-journal.txt — your full journal (plain text, 200+ pages)
+RAGFileWOTabs.txt — your full file (plain text, 200+ pages)
 Output:
 
 chunks.txt — each ~500-character chunk on a separate line
 Command:
 
-fold -w 500 journal.txt > chunks.txt
+fold -w 500 RAGFile.txt > chunks.txt
 You can also use awk to ensure chunk boundaries are cleaner if needed.
 
 🔹 2. Embedding Chunks (Python)
@@ -56,7 +57,7 @@ query.txt — your question, e.g.:
 What are the most common themes I reflect on?
 Output:
 
-relevant_chunks.txt — top 3–5 matching journal chunks
+relevant_chunks.txt — top 3–5 matching RAGFile chunks
 Script: find_chunks.py
 
 # find_chunks.py
@@ -101,9 +102,9 @@ Script: analyze.sh
 QUERY=$(cat query.txt)
 CHUNKS=$(cat relevant_chunks.txt)
 
-PROMPT="You are an AI analyzing journal entries. Based on the excerpts below, answer the question.
+PROMPT="You are an AI analyzing RAGFile entries. Based on the excerpts below, answer the question.
 
-Journal Excerpts:
+RAGFile Excerpts:
 $CHUNKS
 
 Question:

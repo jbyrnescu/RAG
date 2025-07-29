@@ -1,3 +1,3 @@
 #!/bin/bash
-fold -w 500 combinedJournalWOTabs.txt > chunks.txt
+fold -w 500 RAGFileWOTabs.txt > chunks.txt
 
